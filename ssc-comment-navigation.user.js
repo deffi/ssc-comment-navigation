@@ -11,11 +11,12 @@
 // ** Generic **
 // *************
 
-// Creates an link to the specified href and adds the specified text (as text
-// content) and content (as child node).
-function createLink(href, text, content) {
+// Creates an link to the specified href with the specified class and adds
+// the specified text (as text content) and content (as child node).
+function createLink(href, className, text, content) {
   var a = document.createElement('a');
   a.href = href;
+  a.className = className;
   
   if (text)
     a.textContent = text;
@@ -135,8 +136,8 @@ function getSkipTarget(comment) {
 
 // Creates a navigation link, i. e. a link to the specified comment with the
 // specified text and content (cf. createLink).
-function createNavLink(comment, text, content) {
-  var link = createLink("#" + getCommentId(comment), text, content);
+function createNavLink(comment, className, text, content) {
+  var link = createLink("#" + getCommentId(comment), className, text, content);
   link.style.width = "40px";
   link.style.height = "40px";
   link.style.display = "block";
@@ -177,6 +178,7 @@ function addNav(comment) {
 
   // Create the <div> for the navigation links
   var navlinks = document.createElement ("div");
+  navlinks.className = "navigation-links";
   navlinks.style.position = "absolute";
   navlinks.style.left = "5px";
   navlinks.style.top  = "44px";
@@ -186,8 +188,8 @@ function addNav(comment) {
   var skipImage   = createSvg("Skip", "black", arrowPath, "rotate( 0 20 20)");
 
   // Add the links to the <div>
-  if (parent) navlinks.appendChild (createNavLink(parent, "", parentImage));
-  if (skip)   navlinks.appendChild (createNavLink(skip  , "", skipImage  ));
+  if (parent) navlinks.appendChild (createNavLink(parent, "parent", "", parentImage));
+  if (skip)   navlinks.appendChild (createNavLink(skip  , "skip"  , "", skipImage  ));
 
   // Add the <div> with the navigation links to the comment
   var vcard = comment.querySelector('div.vcard');
