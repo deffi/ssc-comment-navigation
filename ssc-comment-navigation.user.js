@@ -31,9 +31,10 @@ function createLink(href, text, content) {
 // ** Lookup **
 // ************
 
-
-// Finds out whether a node is a comment. Any <li> element with class "comment"
-// is considered a comment.
+// Determines whether a node is a comment. Any <li> element with class
+// "comment" is considered a comment.
+//
+// If node is null, false is returned.
 function nodeIsComment(node) {
   if (node)
     return node.tagName == "LI" && node.classList.contains("comment");
@@ -41,12 +42,28 @@ function nodeIsComment(node) {
     return false;
 }
 
+// Finds and returns the element ID for a given comment (which must be valid).
+//
+// The element ID is the ID of the element where a navigation link to this
+// comment should jump to.
+//
+// The comment argument must refer to a valid comment (cf. nodeIsComment).
 function getCommentId(comment) {
+  // Each comment has a <div> with class "commentholder" as a child, which
+  // contains the content of the comment.
   var holder = comment.querySelector('div.commentholder');
   return holder.id;
 }
 
+// Finds and returns the next sibling of a given comment (i. e. the next reply
+// to the same parent comment).
+//
+// If the comment argument is null or the comment does not have a next sibling,
+// null is returned.
 function getNext(comment) {
+  if (!comment)
+    return null;
+
   // The next comment is found by the next sibling node with class "comment".
   // There may be non-comment siblings between comments.
 
@@ -65,27 +82,46 @@ function getNext(comment) {
   return null;
 }
 
+// Finds and returns the parent of a given comment (i. e. the comment that this
+// comment is a reply to).
+//
+// If the comment argument is null or the comment does not have a parent, null
+// is returned.
 function getParent(comment) {
   if (!comment)
     return null;
 
+  // The parent comment should be the parent nodes' parent node.
   var node = comment.parentNode.parentNode;
   if (nodeIsComment(node)) {
+    // The parent node is a comment. Return it.
     return node;
   } else {
+    // The parent node is not a comment, which means that this comment has no
+    // parent. Return null.
     return null;
   }
 }
 
-function getSkip(comment) {
+// Get the next comment that is not part of the subthread starting at a given
+// comment.
+//
+// If the comment argument is null or there are no more comments that are not
+// part of the subthread starting at the comment, null is returned.
+function getSkipTarget(comment) {
+  if (!comment)
+    return null;
+
+  // Start at the current comment
   node = comment;
 
   while(node) {
+    // If there is a next sibling, return it.
     next = getNext(node);
-    
     if (next)
       return next;
     
+    // There is no next sibling. Retry at the parent comment.
     node = getParent(node);
   }
   
@@ -97,6 +133,8 @@ function getSkip(comment) {
 // ** Manipulation **
 // ******************
 
+// Creates a navigation link, i. e. a link to the specified comment with the
+// specified text and content (cf. createLink).
 function createNavLink(comment, text, content) {
   var link = createLink("#" + getCommentId(comment), text, content);
   link.style.width = "40px";
@@ -105,6 +143,8 @@ function createNavLink(comment, text, content) {
   return link;
 }
 
+// Creates an SVG node containing a single path, an optional transform and a
+// title text.
 function createSvg(titleText, color, pathD, transform) {
   var svgNs = "http://www.w3.org/2000/svg";
   var svg = document.createElementNS(svgNs, "svg");
@@ -126,33 +166,37 @@ function createSvg(titleText, color, pathD, transform) {
   return svg;
 }
 
+// The path that describes the navigation arrow.
 const arrowPath = "M20,37.5 l15,-15 h-10 v-20 h-10 v20 h-10 l15,15 z";
 
+// Adds navigation links to the specified comment.
 function addNav(comment) {
-  // Get related items
-  var parent = getParent(comment);
-  var skip   = getSkip  (comment);
+  // Get targets
+  var parent = getParent    (comment);
+  var skip   = getSkipTarget(comment);
 
-  // Build the navigation links
+  // Create the <div> for the navigation links
   var navlinks = document.createElement ("div");
   navlinks.style.position = "absolute";
   navlinks.style.left = "5px";
   navlinks.style.top  = "44px";
 
+  // Create the SVGs
   var parentImage = createSvg("Skip", "black", arrowPath, "rotate(90 20 20)");
   var skipImage   = createSvg("Skip", "black", arrowPath, "rotate( 0 20 20)");
 
+  // Add the links to the <div>
   if (parent) navlinks.appendChild (createNavLink(parent, "", parentImage));
   if (skip)   navlinks.appendChild (createNavLink(skip  , "", skipImage  ));
-  
 
-  // Add the navigation links
+  // Add the <div> with the navigation links to the comment
   var vcard = comment.querySelector('div.vcard');
   vcard.appendChild(navlinks); 
 }
 
+// Adds navigation links (cf. addNav) to all comments.
 function addNavAll() {
-  // Iterate over all comments
+  // Iterate over all comments (cf. nodeIsComment)
   var comments = document.querySelectorAll('li.comment');
   for (var i = 0 ; i < comments.length; i++) {
     addNav (comments[i]);
