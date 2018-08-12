@@ -4,6 +4,7 @@
 // @version     1
 // @grant       none
 // @include     http://slatestarcodex.com/*/*/*/*
+// @include     https://slatestarcodex.com/*/*/*/*
 // ==/UserScript==
 
 
