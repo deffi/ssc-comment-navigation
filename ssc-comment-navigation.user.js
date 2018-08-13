@@ -185,7 +185,7 @@ function addNav(comment) {
   navlinks.style.top  = "44px";
 
   // Create the SVGs
-  var parentImage = createSvg("Skip", "black", arrowPath, "rotate(90 20 20)");
+  var parentImage = createSvg("Up"  , "black", arrowPath, "rotate(90 20 20)");
   var skipImage   = createSvg("Skip", "black", arrowPath, "rotate( 0 20 20)");
 
   // Add the links to the <div>
